@@ -1,0 +1,15 @@
+/.agents/skills/
+/skills-lock.json
+
+# Dependencies and Next.js output
+/node_modules/
+/.next/
+/out/
+/.pnpm-store/
+
+# Local environment and build artifacts
+.env*
+!.env.example
+*.log
+*.tsbuildinfo
+.DS_Store
