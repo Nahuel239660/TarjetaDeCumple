@@ -12,8 +12,8 @@ type SortDirection = "asc" | "desc";
 const filters: { id: Filter; label: string }[] = [
   { id: "all", label: "Todos" },
   { id: "confirmed", label: "Confirmados" },
-  { id: "declined", label: "No vienen" },
   { id: "pending", label: "Pendientes" },
+  { id: "declined", label: "No vienen" },
   { id: "key", label: "Key" },
   { id: "plus", label: "Con +1" },
 ];
