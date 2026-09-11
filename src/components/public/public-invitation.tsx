@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { EventImage } from "@/components/event-image";
-import { useEvent } from "@/components/event-provider";
+import { usePublicEvent } from "@/components/event-provider";
 import { MapPreview } from "@/components/map-preview";
 import { getDirectionsUrl } from "@/lib/directions";
 import type { ImageSlot, KeyAttendance } from "@/lib/models";
@@ -32,7 +32,7 @@ function getImage(images: ImageSlot[], id: ImageSlot["id"]): ImageSlot | undefin
 }
 
 export function PublicInvitation() {
-  const { state, addGuest } = useEvent();
+  const { state, submitRsvp } = usePublicEvent();
   const { content, settings, images, customBlocks } = state;
   const nahuel = getImage(images, "nahuel");
   const fernet = getImage(images, "fernet");
@@ -48,6 +48,8 @@ export function PublicInvitation() {
   const [plusOneName, setPlusOneName] = useState("");
   const [comment, setComment] = useState("");
   const [error, setError] = useState("");
+  const [needsDuplicateConfirmation, setNeedsDuplicateConfirmation] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<{
     fullName: string;
     attendingPeatonal: boolean;
@@ -65,7 +67,7 @@ export function PublicInvitation() {
     };
   }, [settings.eventDate]);
 
-  function submitRsvp(event: FormEvent<HTMLFormElement>) {
+  async function submitRsvpForm(event: { preventDefault(): void }, confirmDuplicate = false) {
     event.preventDefault();
     const cleanName = fullName.trim();
     const cleanPlusOne = plusOneName.trim();
@@ -78,15 +80,28 @@ export function PublicInvitation() {
       return;
     }
 
-    addGuest({
+    setIsSubmitting(true);
+    const result = await submitRsvp({
       fullName: cleanName,
       attendingPeatonal,
-      attendingKey,
+      attendingKey: attendingKey ?? "maybe",
       hasPlusOne,
       plusOneName: hasPlusOne ? cleanPlusOne : "",
       comment: comment.trim(),
+      confirmDuplicate,
     });
+    setIsSubmitting(false);
+    if (result.status === "possible-duplicate") {
+      setNeedsDuplicateConfirmation(true);
+      setError("");
+      return;
+    }
+    if (result.status === "error") {
+      setError(result.message);
+      return;
+    }
     setError("");
+    setNeedsDuplicateConfirmation(false);
     setSubmitted({ fullName: cleanName, attendingPeatonal, attendingKey, hasPlusOne, plusOneName: cleanPlusOne });
   }
 
@@ -234,13 +249,13 @@ export function PublicInvitation() {
               <button type="button" className="public-button public-button--secondary" onClick={resetForm}>Modificar mi respuesta</button>
             </div>
           ) : (
-            <form onSubmit={submitRsvp} noValidate>
+            <form onSubmit={submitRsvpForm} noValidate>
               <p className="public-kicker">RSVP</p>
               <h2>{content.rsvpTitle}</h2>
               <p className="rsvp-helper">{content.rsvpHelper}</p>
 
               <label className="field-label" htmlFor="full-name">Nombre y apellido <span>*</span></label>
-              <input id="full-name" className="public-input" value={fullName} onChange={(event) => setFullName(event.target.value)} placeholder="Tu nombre completo" autoComplete="name" required />
+              <input id="full-name" className="public-input" value={fullName} onChange={(event) => { setFullName(event.target.value); setNeedsDuplicateConfirmation(false); }} placeholder="Tu nombre completo" autoComplete="name" required />
 
               <fieldset>
                 <legend>¿Venís a Peatonal? <span>*</span></legend>
@@ -277,7 +292,13 @@ export function PublicInvitation() {
               <label className="field-label" htmlFor="comment">Comentario (opcional)</label>
               <textarea id="comment" className="public-input public-textarea" value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Ej: dieta vegetariana, celiaquía o aviso de horario..." />
               {error && <p className="form-error" role="alert">{error}</p>}
-              <button className="public-button public-button--primary public-submit" type="submit">{content.rsvpSubmitLabel}</button>
+              {needsDuplicateConfirmation && (
+                <div className="duplicate-warning" role="alert">
+                  <p>Ya existe una confirmación parecida para {fullName.trim()}.</p>
+                  <div><button type="button" className="public-button public-button--secondary" onClick={() => setNeedsDuplicateConfirmation(false)}>Revisar datos</button><button type="button" className="public-button public-button--primary" onClick={(event) => void submitRsvpForm(event, true)} disabled={isSubmitting}>Confirmar igualmente</button></div>
+                </div>
+              )}
+              <button className="public-button public-button--primary public-submit" type="submit" disabled={isSubmitting || needsDuplicateConfirmation}>{isSubmitting ? "Confirmando…" : content.rsvpSubmitLabel}</button>
             </form>
           )}
         </section>

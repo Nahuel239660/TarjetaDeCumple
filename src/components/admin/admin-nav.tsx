@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { logoutAdmin } from "@/app/actions";
 
 const items = [
   { href: "/admin", label: "Resumen" },
@@ -39,6 +40,9 @@ export function AdminNav() {
           <Link href="/" target="_blank" className="button button--quiet button--small">
             Ver invitación
           </Link>
+          <form action={logoutAdmin}>
+            <button type="submit" className="admin-logout">Salir</button>
+          </form>
         </div>
       </div>
     </header>

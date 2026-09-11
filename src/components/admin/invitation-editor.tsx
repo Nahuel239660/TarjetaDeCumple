@@ -19,7 +19,7 @@ function EditorSection({ number, id, title, children }: { number: string; id: st
 }
 
 function InvitationEditorReady() {
-  const { state, updateContent } = useEvent();
+  const { state, updateContent, error, saving } = useEvent();
   const [content, setContent] = useState<EventContent>(() => structuredClone(state.content));
   const [blocks, setBlocks] = useState<CustomContentBlock[]>(() => structuredClone(state.customBlocks));
   const [saved, setSaved] = useState(false);
@@ -47,7 +47,7 @@ function InvitationEditorReady() {
     setSaved(false);
   }
 
-  function save(event: FormEvent<HTMLFormElement>) {
+  async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const normalized: EventContent = {
       ...content,
@@ -65,16 +65,17 @@ function InvitationEditorReady() {
       },
     };
     setContent(normalized);
-    updateContent(normalized, blocks);
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 2400);
+    if (await updateContent(normalized, blocks)) {
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 2400);
+    }
   }
 
   return (
     <div className="admin-page editor-page">
       <div className="admin-title-row">
         <div><p className="admin-eyebrow">Contenido público</p><h1>Editor de Contenido de Invitación</h1></div>
-        <div className="title-actions"><Link href="/" target="_blank" className="button button--quiet">Vista previa</Link><button type="submit" form="invitation-editor-form" className="button button--primary">Guardar cambios</button></div>
+        <div className="title-actions"><Link href="/" target="_blank" className="button button--quiet">Vista previa</Link><button type="submit" form="invitation-editor-form" className="button button--primary" disabled={saving}>Guardar cambios</button></div>
       </div>
 
       <div className="editor-layout">
@@ -150,9 +151,10 @@ function InvitationEditorReady() {
             </div>
           </EditorSection>
 
-          <div className="editor-save-bar"><span>{saved ? "Cambios guardados" : "Los cambios quedan en este navegador"}</span><button className="button button--primary" type="submit">Guardar y publicar</button></div>
+          <div className="editor-save-bar"><span>{saved ? "Cambios guardados" : "Los cambios se guardan en el evento"}</span><button className="button button--primary" type="submit" disabled={saving}>Guardar y publicar</button></div>
         </form>
       </div>
+      {error && <div className="admin-toast" role="alert">{error}</div>}
     </div>
   );
 }

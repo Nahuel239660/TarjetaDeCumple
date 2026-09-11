@@ -13,6 +13,9 @@ export interface Guest {
   plusOneName: string;
   comment: string;
   respondedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  possibleDuplicate?: boolean;
 }
 
 export interface EventStopContent {
@@ -90,3 +93,5 @@ export interface EventState {
   images: ImageSlot[];
   customBlocks: CustomContentBlock[];
 }
+
+export type PublicEventState = Omit<EventState, "guests">;

@@ -45,6 +45,7 @@ export function createSeedGuests(): Guest[] {
     const hour = String(18 + (index % 5)).padStart(2, "0");
     const minute = String((index * 7) % 60).padStart(2, "0");
 
+    const respondedAt = index < 58 ? `2026-09-${day}T${hour}:${minute}:00.000Z` : null;
     return {
       id: `guest-${String(index + 1).padStart(3, "0")}-seed`,
       guestNumber: index + 1,
@@ -54,7 +55,9 @@ export function createSeedGuests(): Guest[] {
       hasPlusOne: isConfirmed && hasPlusOne,
       plusOneName: isConfirmed && hasPlusOne ? plusOneNames[index] : "",
       comment: comments[index] ?? "",
-      respondedAt: index < 58 ? `2026-09-${day}T${hour}:${minute}:00.000Z` : null,
+      respondedAt,
+      createdAt: respondedAt ?? "2026-09-06T12:00:00.000Z",
+      updatedAt: respondedAt ?? "2026-09-06T12:00:00.000Z",
     };
   });
 }
@@ -156,7 +159,7 @@ export function createDefaultState(): EventState {
     ],
     customBlocks: [
       {
-        id: "block-dress-code",
+        id: "e1d7a9f5-1d86-4c71-8d55-7108df80cb29",
         title: "Dress code",
         content: "Casual nocturno, negro u oscuro.",
         visible: true,
@@ -164,7 +167,7 @@ export function createDefaultState(): EventState {
         ctaUrl: "",
       },
       {
-        id: "block-drinks",
+        id: "287c67a4-b675-424c-b981-6101d63ddc74",
         title: "Bebidas",
         content: "Barra de Fernet, birras y algunos tragos para brindar.",
         visible: true,

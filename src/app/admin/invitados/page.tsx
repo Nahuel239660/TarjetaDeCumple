@@ -1,5 +1,8 @@
 import { GuestsAdmin } from "@/components/admin/guests-admin";
+import { AdminPageFrame } from "@/components/admin/admin-page-frame";
 
-export default function GuestsPage() {
-  return <GuestsAdmin />;
+export const dynamic = "force-dynamic";
+
+export default async function GuestsPage() {
+  return <AdminPageFrame><GuestsAdmin /></AdminPageFrame>;
 }

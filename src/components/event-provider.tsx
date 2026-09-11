@@ -1,16 +1,15 @@
 "use client";
 
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import {
-  createContext,
-  type ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { createDefaultState } from "@/lib/default-data";
-import { LocalStorageEventRepository } from "@/lib/event-repository";
+  deleteGuestAction,
+  submitPublicRsvp,
+  updateContentAction,
+  updateGuestAction,
+  updateImageMetadataAction,
+  updateSettingsAction,
+  type PublicRsvpResult,
+} from "@/app/actions";
 import type {
   CustomContentBlock,
   EventContent,
@@ -18,139 +17,95 @@ import type {
   EventState,
   Guest,
   ImageSlot,
+  PublicEventState,
 } from "@/lib/models";
 
 interface EventContextValue {
   state: EventState;
-  ready: boolean;
-  addGuest(guest: Omit<Guest, "id" | "guestNumber" | "respondedAt">): Guest;
-  updateGuest(guest: Guest): void;
-  deleteGuest(id: string): void;
-  updateContent(content: EventContent, customBlocks: CustomContentBlock[]): void;
-  updateSettings(settings: EventSettings): void;
-  updateImage(image: ImageSlot): void;
-  reset(): void;
+  ready: true;
+  saving: boolean;
+  error: string;
+  clearError(): void;
+  updateGuest(guest: Guest): Promise<boolean>;
+  deleteGuest(id: string): Promise<boolean>;
+  updateContent(content: EventContent, customBlocks: CustomContentBlock[]): Promise<boolean>;
+  updateSettings(settings: EventSettings): Promise<boolean>;
+  updateImage(image: ImageSlot): Promise<boolean>;
+}
+
+interface PublicEventContextValue {
+  state: PublicEventState;
+  submitRsvp(input: {
+    fullName: string;
+    attendingPeatonal: boolean;
+    attendingKey: "yes" | "no" | "maybe";
+    hasPlusOne: boolean;
+    plusOneName: string;
+    comment: string;
+    confirmDuplicate?: boolean;
+  }): Promise<PublicRsvpResult>;
 }
 
 const EventContext = createContext<EventContextValue | null>(null);
-const repository = new LocalStorageEventRepository();
+const PublicEventContext = createContext<PublicEventContextValue | null>(null);
 
-export function EventProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<EventState>(() => createDefaultState());
-  const [ready, setReady] = useState(false);
+function messageFor(error: unknown): string {
+  return error instanceof Error && error.message ? error.message : "No se pudieron guardar los cambios.";
+}
 
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      setState(repository.load());
-      setReady(true);
-    });
-    const unsubscribe = repository.subscribe(setState);
-    return () => {
-      window.cancelAnimationFrame(frame);
-      unsubscribe();
-    };
+export function EventProvider({ children, initialState }: { children: ReactNode; initialState: EventState }) {
+  const [state, setState] = useState<EventState>(initialState);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const commit = useCallback(async (mutation: () => Promise<EventState>): Promise<boolean> => {
+    setSaving(true);
+    setError("");
+    try {
+      setState(await mutation());
+      return true;
+    } catch (caught) {
+      setError(messageFor(caught));
+      return false;
+    } finally {
+      setSaving(false);
+    }
   }, []);
 
-  const commit = useCallback((updater: (current: EventState) => EventState) => {
-    setState((current) => {
-      const next = updater(current);
-      repository.save(next);
-      return next;
-    });
-  }, []);
-
-  const value = useMemo<EventContextValue>(
-    () => ({
-      state,
-      ready,
-      addGuest(input) {
-        const nextNumber = state.guests.reduce((max, guest) => Math.max(max, guest.guestNumber), 0) + 1;
-        const guest: Guest = {
-          ...input,
-          id: crypto.randomUUID(),
-          guestNumber: nextNumber,
-          respondedAt: new Date().toISOString(),
-        };
-        commit((current) => ({ ...current, guests: [guest, ...current.guests] }));
-        return guest;
-      },
-      updateGuest(guest) {
-        commit((current) => ({
-          ...current,
-          guests: current.guests.map((item) => (item.id === guest.id ? guest : item)),
-        }));
-      },
-      deleteGuest(id) {
-        commit((current) => ({
-          ...current,
-          guests: current.guests.filter((guest) => guest.id !== id),
-        }));
-      },
-      updateContent(content, customBlocks) {
-        commit((current) => ({
-          ...current,
-          content,
-          customBlocks,
-          settings: {
-            ...current.settings,
-            peatonal: {
-              ...current.settings.peatonal,
-              venue: content.peatonal.venue,
-              address: content.peatonal.address,
-              showMap: content.peatonal.showMap,
-              directionsLabel: content.peatonal.directionsLabel,
-            },
-            key: {
-              ...current.settings.key,
-              venue: content.key.venue,
-              address: content.key.address,
-              showMap: content.key.showMap,
-              directionsLabel: content.key.directionsLabel,
-            },
-          },
-        }));
-      },
-      updateSettings(settings) {
-        commit((current) => ({
-          ...current,
-          settings,
-          content: {
-            ...current.content,
-            peatonal: {
-              ...current.content.peatonal,
-              venue: settings.peatonal.venue,
-              address: settings.peatonal.address,
-              showMap: settings.peatonal.showMap,
-              directionsLabel: settings.peatonal.directionsLabel,
-            },
-            key: {
-              ...current.content.key,
-              venue: settings.key.venue,
-              address: settings.key.address,
-              showMap: settings.key.showMap,
-              directionsLabel: settings.key.directionsLabel,
-            },
-          },
-        }));
-      },
-      updateImage(image) {
-        commit((current) => ({
-          ...current,
-          images: current.images.map((item) => (item.id === image.id ? image : item)),
-        }));
-      },
-      reset() {
-        setState(repository.reset());
-      },
-    }),
-    [commit, ready, state],
-  );
+  const value = useMemo<EventContextValue>(() => ({
+    state,
+    ready: true,
+    saving,
+    error,
+    clearError: () => setError(""),
+    updateGuest: (guest) => commit(() => updateGuestAction(guest)),
+    deleteGuest: (id) => commit(() => deleteGuestAction(id)),
+    updateContent: (content, customBlocks) => commit(() => updateContentAction({ content, customBlocks })),
+    updateSettings: (settings) => commit(() => updateSettingsAction(settings)),
+    updateImage: (image) => commit(() => updateImageMetadataAction({
+      id: image.id,
+      title: image.title,
+      caption: image.caption,
+      visible: image.visible,
+    })),
+  }), [commit, error, saving, state]);
 
   return <EventContext.Provider value={value}>{children}</EventContext.Provider>;
 }
 
+export function PublicEventProvider({ children, initialState }: { children: ReactNode; initialState: PublicEventState }) {
+  const value = useMemo<PublicEventContextValue>(() => ({ state: initialState, submitRsvp: submitPublicRsvp }), [initialState]);
+  return <PublicEventContext.Provider value={value}>{children}</PublicEventContext.Provider>;
+}
+
 export function useEvent(): EventContextValue {
   const context = useContext(EventContext);
-  if (!context) throw new Error("useEvent must be used inside EventProvider");
+  if (!context) throw new Error("useEvent debe usarse dentro de EventProvider.");
+  return context;
+}
+
+export function usePublicEvent(): PublicEventContextValue {
+  const context = useContext(PublicEventContext);
+  if (!context) throw new Error("usePublicEvent debe usarse dentro de PublicEventProvider.");
   return context;
 }

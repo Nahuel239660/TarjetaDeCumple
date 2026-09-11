@@ -707,6 +707,29 @@ button {
   font-size: 12px;
 }
 
+.duplicate-warning {
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px solid #6c512c;
+  background: #201b16;
+  color: #e8d5ae;
+  font-size: 13px;
+}
+
+.duplicate-warning p { margin: 0; }
+
+.duplicate-warning div {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.duplicate-warning .public-button {
+  min-height: 38px;
+  padding: 0 15px;
+}
+
 .public-submit {
   width: 100%;
   margin-top: 48px;
@@ -847,7 +870,22 @@ button {
 
 .admin-header__actions {
   display: flex;
+  align-items: center;
+  gap: 12px;
 }
+
+.admin-logout {
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  color: #9b9498;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.admin-logout:hover,
+.admin-logout:focus-visible { color: #f1aa37; }
 
 .admin-main {
   min-height: calc(100dvh - 78px);
@@ -1896,6 +1934,75 @@ button {
   color: #f2edee;
   box-shadow: var(--shadow);
 }
+
+.duplicate-badge {
+  margin-left: 8px;
+  color: #efbd67;
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.admin-login-site {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #0c0c0e;
+}
+
+.admin-login-panel {
+  width: min(100%, 420px);
+  padding: 38px;
+  border: 1px solid #302f34;
+  border-radius: 14px;
+  background: #1b1b1e;
+  box-shadow: var(--shadow);
+}
+
+.admin-login-panel h1 {
+  margin: 10px 0;
+  color: #f7f3f2;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 46px;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+}
+
+.admin-login-panel > p:not(.admin-eyebrow) {
+  margin: 0;
+  color: #b8b0b1;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.admin-login-form { margin-top: 30px; }
+
+.admin-login-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: #c4bcbd;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-login-form input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid #343239;
+  border-radius: 6px;
+  outline: none;
+  background: #111114;
+  color: #f4eff0;
+  font: inherit;
+}
+
+.admin-login-form input:focus-visible { border-color: #f1aa37; }
+
+.admin-login-form .button { margin-top: 20px; }
 
 /* Settings */
 

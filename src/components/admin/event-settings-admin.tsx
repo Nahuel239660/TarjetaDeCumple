@@ -45,22 +45,23 @@ function LocationEditor({
 }
 
 function EventSettingsAdminReady() {
-  const { state, updateSettings } = useEvent();
+  const { state, updateSettings, error, saving } = useEvent();
   const [settings, setSettings] = useState<EventSettings>(() => structuredClone(state.settings));
   const [saved, setSaved] = useState(false);
 
-  function save(event: FormEvent<HTMLFormElement>) {
+  async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    updateSettings(settings);
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 2400);
+    if (await updateSettings(settings)) {
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 2400);
+    }
   }
 
   return (
     <div className="admin-page settings-page">
       <div className="admin-title-row">
         <div><p className="admin-eyebrow">Parámetros del evento</p><h1>Configuración del Evento</h1><p className="admin-lead">Información general, ubicaciones y funciones opcionales.</p></div>
-        <div className="title-actions"><button type="button" className="button button--quiet" onClick={() => setSettings(structuredClone(state.settings))}>Descartar</button><button form="settings-form" type="submit" className="button button--primary">Guardar cambios</button></div>
+        <div className="title-actions"><button type="button" className="button button--quiet" onClick={() => setSettings(structuredClone(state.settings))}>Descartar</button><button form="settings-form" type="submit" className="button button--primary" disabled={saving}>Guardar cambios</button></div>
       </div>
 
       <form id="settings-form" className="settings-layout" onSubmit={save}>
@@ -82,20 +83,21 @@ function EventSettingsAdminReady() {
         <aside className="settings-side-column">
           <section className="settings-section qr-settings">
             <div className="qr-title"><span aria-hidden="true">▦</span><div><p className="admin-eyebrow">Módulo opcional</p><h2>Credencial QR</h2></div></div>
-            <label className="qr-toggle"><span><b>Activar credencial QR</b><small>Estado local solamente</small></span><input type="checkbox" checked={settings.qrEnabled} onChange={(event) => setSettings({ ...settings, qrEnabled: event.target.checked })} /></label>
+            <label className="qr-toggle"><span><b>Activar credencial QR</b><small>Preferencia del evento</small></span><input type="checkbox" checked={settings.qrEnabled} onChange={(event) => setSettings({ ...settings, qrEnabled: event.target.checked })} /></label>
             <p>El QR está {settings.qrEnabled ? "activado como preferencia" : "desactivado"}. En esta fase no se generan ni validan credenciales.</p>
             <div className="inline-notice">Mientras esté OFF, no aparece ninguna referencia al QR en la invitación pública.</div>
           </section>
 
           <section className="settings-section">
             <p className="admin-eyebrow">Persistencia</p>
-            <h2>Datos locales</h2>
-            <p>Los cambios se guardan únicamente en este navegador durante la fase 1.</p>
-            <button type="submit" className="button button--primary button--block">Guardar configuración</button>
+            <h2>Datos del evento</h2>
+            <p>Los cambios se guardan de forma segura para esta invitación.</p>
+            <button type="submit" className="button button--primary button--block" disabled={saving}>Guardar configuración</button>
             {saved && <p className="save-confirmation" role="status">Configuración guardada.</p>}
           </section>
         </aside>
       </form>
+      {error && <div className="admin-toast" role="alert">{error}</div>}
     </div>
   );
 }

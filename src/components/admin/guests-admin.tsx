@@ -85,7 +85,7 @@ function compareGuests(a: Guest, b: Guest, key: SortKey): number {
 }
 
 export function GuestsAdmin() {
-  const { state, updateGuest, deleteGuest } = useEvent();
+  const { state, updateGuest, deleteGuest, error } = useEvent();
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
   const [filter, setFilter] = useState<Filter>("all");
@@ -117,11 +117,15 @@ export function GuestsAdmin() {
     }
   }
 
-  function saveGuest(event: FormEvent<HTMLFormElement>) {
+  async function saveGuest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!editing) return;
-    updateGuest({ ...editing, plusOneName: editing.hasPlusOne ? editing.plusOneName : "" });
-    setEditing(null);
+    if (await updateGuest({ ...editing, plusOneName: editing.hasPlusOne ? editing.plusOneName : "" })) setEditing(null);
+  }
+
+  async function confirmDelete() {
+    if (!deleting) return;
+    if (await deleteGuest(deleting.id)) setDeleting(null);
   }
 
   function sortHeader(label: string, key: SortKey) {
@@ -185,7 +189,7 @@ export function GuestsAdmin() {
             {visibleGuests.map((guest) => (
               <tr key={guest.id} className={guest.attendingPeatonal === false ? "is-declined" : undefined}>
                 <td className="guest-number">{formatGuestNumber(guest.guestNumber)}</td>
-                <td className="guest-name">{guest.fullName}</td>
+                <td className="guest-name">{guest.fullName}{guest.possibleDuplicate && <span className="duplicate-badge">Posible duplicado</span>}</td>
                 <td><span className={`attendance attendance--${guest.attendingPeatonal === true ? "yes" : guest.attendingPeatonal === false ? "no" : "pending"}`}>{attendanceText(guest.attendingPeatonal)}</span></td>
                 <td><span className={`attendance attendance--${guest.attendingKey === "yes" ? "yes" : guest.attendingKey === "maybe" ? "pending" : guest.attendingKey === "no" ? "no" : "neutral"}`}>{keyText(guest.attendingKey)}</span></td>
                 <td>{guest.hasPlusOne ? <span className="status-badge">Sí</span> : <span className="muted">No</span>}</td>
@@ -206,6 +210,8 @@ export function GuestsAdmin() {
           </tbody>
         </table>
       </div>
+
+      {error && <div className="admin-toast" role="alert">{error}</div>}
 
       {editing && (
         <div className="drawer-backdrop" onMouseDown={() => setEditing(null)}>
@@ -233,7 +239,7 @@ export function GuestsAdmin() {
             <p className="admin-eyebrow admin-eyebrow--red">Eliminar invitado</p>
             <h2 id="delete-title">¿Eliminar a {deleting.fullName}?</h2>
             <p id="delete-body">El número {formatGuestNumber(deleting.guestNumber)} no se reasignará a otro invitado.</p>
-            <div className="form-actions"><button type="button" className="button button--quiet" onClick={() => setDeleting(null)}>Cancelar</button><button type="button" className="button button--danger" onClick={() => { deleteGuest(deleting.id); setDeleting(null); }}>Eliminar</button></div>
+            <div className="form-actions"><button type="button" className="button button--quiet" onClick={() => setDeleting(null)}>Cancelar</button><button type="button" className="button button--danger" onClick={() => void confirmDelete()}>Eliminar</button></div>
           </div>
         </div>
       )}

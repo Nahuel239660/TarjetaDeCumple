@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Bodoni_Moda, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
-import { EventProvider } from "@/components/event-provider";
 import "./globals.css";
 
 const bodoni = Bodoni_Moda({
@@ -28,9 +27,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es">
+    <html lang="es" data-scroll-behavior="smooth">
       <body className={`${bodoni.variable} ${jakarta.variable} ${mono.variable}`}>
-        <EventProvider>{children}</EventProvider>
+        {children}
       </body>
     </html>
   );

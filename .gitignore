@@ -6,6 +6,7 @@
 /.next/
 /out/
 /.pnpm-store/
+/.vercel/
 
 # Local environment and build artifacts
 .env*
@@ -13,3 +14,5 @@
 *.log
 *.tsbuildinfo
 .DS_Store
+.vercel
+.env*.local
