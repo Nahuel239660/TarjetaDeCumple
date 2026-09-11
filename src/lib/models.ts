@@ -2,6 +2,8 @@ export type Attendance = boolean | null;
 export type KeyAttendance = "yes" | "no" | "maybe" | null;
 export type DirectionsProvider = "google" | "waze" | "custom";
 export type ImageSlotKey = "nahuel" | "fernet" | "kevin";
+export type EntranceAnimationType = "clam";
+export type EntranceAnimationFrequency = "session" | "always" | "device";
 
 export interface Guest {
   id: string;
@@ -58,6 +60,17 @@ export interface LocationSettings {
   customDirectionsUrl: string;
 }
 
+export interface EntranceAnimationSettings {
+  enabled: boolean;
+  type: EntranceAnimationType;
+  frequency: EntranceAnimationFrequency;
+  durationMs: number;
+  allowSkip: boolean;
+  primaryText: string;
+  secondaryText: string;
+  showDate: boolean;
+}
+
 export interface EventSettings {
   eventName: string;
   eventDate: string;
@@ -66,6 +79,7 @@ export interface EventSettings {
   peatonal: LocationSettings;
   key: LocationSettings;
   qrEnabled: boolean;
+  entranceAnimation: EntranceAnimationSettings;
 }
 
 export interface ImageSlot {

@@ -12,6 +12,7 @@ La experiencia pública mantiene el tono de una invitación de club: una narrati
 
 ### Invitación pública
 
+- Apertura cinematográfica opcional con frecuencia configurable, salto y adaptación a movimiento reducido.
 - RSVP con Peatonal, Key, +1 condicional y comentario opcional.
 - Detección de respuestas con nombres equivalentes, con confirmación explícita antes de aceptar un duplicado.
 - Mapa ligero con enlace de indicaciones, sin API paga.
@@ -25,7 +26,7 @@ La experiencia pública mantiene el tono de una invitación de club: una narrati
 - Lista densa con búsqueda, filtros, orden, edición, borrado y exportación CSV.
 - Número visible inmutable (`#001`, `#002`, …), independiente del ID interno y nunca reutilizado.
 - Edición de textos de la invitación, bloques personalizados, imágenes y ubicaciones.
-- Configuración de Peatonal/Key y estado de QR; QR permanece desactivado por defecto.
+- Configuración de Peatonal/Key, animación de entrada y estado de QR; QR permanece desactivado por defecto.
 
 ## Arquitectura
 

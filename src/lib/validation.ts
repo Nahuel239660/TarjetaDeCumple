@@ -75,6 +75,17 @@ const locationSchema = z.object({
   customDirectionsUrl: text(500),
 });
 
+const entranceAnimationSchema = z.object({
+  enabled: z.boolean(),
+  type: z.literal("clam"),
+  frequency: z.enum(["session", "always", "device"]),
+  durationMs: z.number().int().min(500).max(10_000),
+  allowSkip: z.boolean(),
+  primaryText: text(80),
+  secondaryText: text(120),
+  showDate: z.boolean(),
+});
+
 export const eventSettingsSchema = z.object({
   eventName: text(180),
   eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -83,6 +94,7 @@ export const eventSettingsSchema = z.object({
   peatonal: locationSchema,
   key: locationSchema,
   qrEnabled: z.boolean(),
+  entranceAnimation: entranceAnimationSchema,
 });
 
 export const customContentBlockSchema = z.object({

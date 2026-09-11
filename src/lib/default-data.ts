@@ -130,6 +130,16 @@ export function createDefaultState(): EventState {
         customDirectionsUrl: "",
       },
       qrEnabled: false,
+      entranceAnimation: {
+        enabled: true,
+        type: "clam",
+        frequency: "always",
+        durationMs: 3100,
+        allowSkip: true,
+        primaryText: "LA PERLA",
+        secondaryText: "BIRTHDAY NIGHT",
+        showDate: true,
+      },
     },
     images: [
       {

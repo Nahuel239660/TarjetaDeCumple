@@ -102,6 +102,193 @@ button {
 
 /* Public invitation */
 
+html.birthday-intro-active {
+  overflow: hidden;
+}
+
+html[data-birthday-intro-seen="true"] .birthday-intro:not(.birthday-intro--preview) {
+  display: none;
+}
+
+.birthday-intro {
+  --intro-duration: 3100ms;
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #020203;
+  isolation: isolate;
+  animation: birthday-intro-overlay var(--intro-duration) linear both;
+}
+
+.birthday-intro__atmosphere {
+  position: absolute;
+  z-index: -1;
+  inset: -20%;
+  background: radial-gradient(circle at 50% 56%, rgb(242 154 9 / 0.075), transparent 27%, rgb(0 0 0 / 0) 55%);
+  opacity: 0;
+  transform: scale(0.88);
+  animation: birthday-intro-atmosphere var(--intro-duration) ease-out both;
+}
+
+.birthday-intro__stage {
+  position: relative;
+  width: min(72vw, 760px);
+  aspect-ratio: 1;
+  perspective: 1400px;
+  transform-style: preserve-3d;
+  animation: birthday-intro-camera var(--intro-duration) cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.birthday-intro__glow {
+  position: absolute;
+  z-index: 1;
+  top: 43%;
+  left: 50%;
+  width: 44%;
+  height: 22%;
+  border-radius: 50%;
+  background: rgb(242 154 9 / 0.46);
+  filter: blur(48px);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.35);
+  animation: birthday-intro-glow var(--intro-duration) ease-out both;
+}
+
+.birthday-intro__shell {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  will-change: transform, opacity;
+}
+
+.birthday-intro__shell--bottom {
+  z-index: 2;
+  transform-origin: 50% 66%;
+  animation: birthday-intro-bottom var(--intro-duration) cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.birthday-intro__shell--top {
+  z-index: 3;
+  transform-origin: 50% 74%;
+  filter: drop-shadow(0 22px 32px rgb(0 0 0 / 0.58));
+  backface-visibility: hidden;
+  animation: birthday-intro-top var(--intro-duration) cubic-bezier(0.2, 0.72, 0.25, 1) both;
+}
+
+.birthday-intro__copy {
+  position: absolute;
+  z-index: 4;
+  top: 47%;
+  left: 50%;
+  width: 70%;
+  display: grid;
+  justify-items: center;
+  color: #f2ece5;
+  opacity: 0;
+  text-align: center;
+  text-shadow: 0 2px 22px rgb(0 0 0 / 0.96), 0 0 24px rgb(242 154 9 / 0.18);
+  transform: translate(-50%, -42%) scale(0.96);
+  animation: birthday-intro-copy var(--intro-duration) ease-out both;
+}
+
+.birthday-intro__copy strong {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(39px, 5.2vw, 66px);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+}
+
+.birthday-intro__copy span {
+  margin-top: 10px;
+  color: var(--orange-soft);
+  font-family: var(--font-mono), monospace;
+  font-size: clamp(8px, 1vw, 11px);
+  font-weight: 700;
+  letter-spacing: 0.31em;
+  text-transform: uppercase;
+}
+
+.birthday-intro__copy small {
+  margin-top: 14px;
+  color: #8d8886;
+  font-family: var(--font-mono), monospace;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.birthday-intro__skip {
+  position: absolute;
+  z-index: 5;
+  top: max(22px, env(safe-area-inset-top));
+  right: max(24px, env(safe-area-inset-right));
+  padding: 9px 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.16);
+  background: transparent;
+  color: #817d7e;
+  cursor: pointer;
+  font-family: var(--font-mono), monospace;
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.birthday-intro__skip:hover,
+.birthday-intro__skip:focus-visible {
+  border-color: var(--orange);
+  color: #d9d2cf;
+}
+
+@keyframes birthday-intro-overlay {
+  0%, 84% { visibility: visible; opacity: 1; }
+  100% { visibility: hidden; opacity: 0; }
+}
+
+@keyframes birthday-intro-atmosphere {
+  0%, 30% { opacity: 0; transform: scale(0.88); }
+  57%, 83% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.04); }
+}
+
+@keyframes birthday-intro-camera {
+  0%, 8% { opacity: 0; transform: translateY(1.5%) scale(0.96); }
+  18%, 61% { opacity: 1; transform: translateY(0) scale(1); }
+  83% { opacity: 1; transform: translateY(-0.5%) scale(1.025); }
+  100% { opacity: 0; transform: translateY(-1%) scale(1.04); }
+}
+
+@keyframes birthday-intro-top {
+  0%, 24% { opacity: 1; transform: translateY(9%) rotateX(-71deg) scale(0.95); }
+  52%, 100% { opacity: 1; transform: translateY(-8%) rotateX(0deg) scale(1); }
+}
+
+@keyframes birthday-intro-bottom {
+  0%, 24% { opacity: 1; transform: translateY(-4%) rotateX(5deg) scale(0.95); }
+  52%, 100% { opacity: 1; transform: translateY(4%) rotateX(0deg) scale(1); }
+}
+
+@keyframes birthday-intro-glow {
+  0%, 32% { opacity: 0; transform: translate(-50%, -50%) scale(0.35); }
+  54% { opacity: 0.72; transform: translate(-50%, -50%) scale(0.94); }
+  78% { opacity: 0.42; transform: translate(-50%, -50%) scale(1.08); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.18); }
+}
+
+@keyframes birthday-intro-copy {
+  0%, 55% { opacity: 0; transform: translate(-50%, -35%) scale(0.96); }
+  68%, 84% { opacity: 1; transform: translate(-50%, -42%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -47%) scale(1.015); }
+}
+
 .public-site {
   min-height: 100dvh;
   background:
@@ -2043,6 +2230,37 @@ button {
   top: 90px;
 }
 
+.entrance-animation-settings {
+  border-top: 2px solid rgb(242 154 9 / 0.42);
+}
+
+.entrance-animation-settings__intro {
+  max-width: 58ch;
+  margin: -8px 0 22px;
+  color: #8f8990;
+  font-size: 12px;
+}
+
+.entrance-animation-settings__toggles {
+  display: grid;
+  gap: 8px;
+}
+
+.entrance-animation-settings__actions {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #302f34;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.entrance-animation-settings__actions > span {
+  color: #77727a;
+  font-size: 10px;
+}
+
 .settings-section--orange { border-top: 2px solid rgb(242 154 9 / 0.65); }
 .settings-section--violet { border-top: 2px solid rgb(201 149 240 / 0.6); }
 
@@ -2191,6 +2409,14 @@ button {
 }
 
 @media (max-width: 700px) {
+  .birthday-intro__stage { width: min(92vw, 580px); }
+  .birthday-intro__copy { top: 48%; width: 78%; }
+  .birthday-intro__copy strong { font-size: clamp(36px, 12vw, 54px); }
+  .birthday-intro__skip {
+    top: max(18px, env(safe-area-inset-top));
+    right: max(18px, env(safe-area-inset-right));
+  }
+
   .public-header__inner { width: calc(100% - 32px); }
   .public-header__meta { gap: 14px; }
   .public-hero {
@@ -2268,6 +2494,7 @@ button {
   .image-slot-card__header { flex-direction: column; }
   .provider-options > div { flex-direction: column; }
   .settings-section__heading { align-items: flex-start; flex-direction: column; }
+  .entrance-animation-settings__actions { align-items: flex-start; flex-direction: column; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2277,4 +2504,42 @@ button {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+
+  .birthday-intro {
+    animation: birthday-intro-reduced 420ms ease-out both !important;
+  }
+
+  .birthday-intro__stage {
+    opacity: 1;
+    transform: none;
+    animation: none !important;
+  }
+
+  .birthday-intro__shell--top {
+    opacity: 1;
+    transform: translateY(-8%) rotateX(0deg);
+    animation: none !important;
+  }
+
+  .birthday-intro__shell--bottom {
+    opacity: 1;
+    transform: translateY(4%) rotateX(0deg);
+    animation: none !important;
+  }
+
+  .birthday-intro__atmosphere,
+  .birthday-intro__glow {
+    display: none;
+  }
+
+  .birthday-intro__copy {
+    opacity: 1;
+    transform: translate(-50%, -42%);
+    animation: none !important;
+  }
+}
+
+@keyframes birthday-intro-reduced {
+  0%, 68% { visibility: visible; opacity: 1; }
+  100% { visibility: hidden; opacity: 0; }
 }

@@ -20,6 +20,19 @@ function fallbackState(): EventState {
   return structuredClone(createDefaultState());
 }
 
+function normalizeSettings(settings: EventSettings): EventSettings {
+  const defaults = createDefaultState().settings;
+  const stored = settings as Partial<EventSettings>;
+
+  return {
+    ...defaults,
+    ...stored,
+    peatonal: { ...defaults.peatonal, ...stored.peatonal },
+    key: { ...defaults.key, ...stored.key },
+    entranceAnimation: { ...defaults.entranceAnimation, ...stored.entranceAnimation },
+  };
+}
+
 function toIso(value: Date | null): string | null {
   return value ? value.toISOString() : null;
 }
@@ -158,7 +171,7 @@ async function readEventState(includeGuests: boolean): Promise<EventState> {
 
   return {
     content: configuration.content,
-    settings: configuration.settings,
+    settings: normalizeSettings(configuration.settings),
     images: storedImages.map(mapImage),
     customBlocks: storedBlocks.map(mapBlock),
     guests: includeGuests ? withPossibleDuplicateFlags(storedGuests.map(mapGuest)) : [],
@@ -279,7 +292,7 @@ async function getConfiguration() {
 export async function saveAdminContent(content: EventContent, blocks: CustomContentBlock[]) {
   const db = getDatabase();
   const configuration = await getConfiguration();
-  const settings = syncContentWithSettings(content, configuration.settings);
+  const settings = syncContentWithSettings(content, normalizeSettings(configuration.settings));
   await db.update(eventConfigurations).set({ content, settings, updatedAt: new Date() }).where(eq(eventConfigurations.id, configuration.id));
   await db.delete(customContentBlocks);
   if (blocks.length > 0) {

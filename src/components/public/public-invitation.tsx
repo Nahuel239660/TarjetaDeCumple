@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { EventImage } from "@/components/event-image";
 import { usePublicEvent } from "@/components/event-provider";
 import { MapPreview } from "@/components/map-preview";
+import { EntranceAnimation } from "@/components/public/entrance-animation";
 import { getDirectionsUrl } from "@/lib/directions";
 import type { ImageSlot, KeyAttendance } from "@/lib/models";
 
@@ -111,6 +112,7 @@ export function PublicInvitation() {
 
   return (
     <div className="public-site" id="top">
+      <EntranceAnimation config={settings.entranceAnimation} eventDate={settings.eventDate} />
       <a href="#main-content" className="skip-link">Saltar al contenido</a>
       <header className="public-header">
         <div className="public-header__inner">

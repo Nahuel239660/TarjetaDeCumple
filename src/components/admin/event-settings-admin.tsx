@@ -1,10 +1,11 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import { EntranceAnimation } from "@/components/public/entrance-animation";
 import { useEvent } from "@/components/event-provider";
 import { MapPreview } from "@/components/map-preview";
 import { getDirectionsUrl } from "@/lib/directions";
-import type { DirectionsProvider, EventSettings, LocationSettings } from "@/lib/models";
+import type { DirectionsProvider, EntranceAnimationFrequency, EventSettings, LocationSettings } from "@/lib/models";
 
 function LocationEditor({
   accent,
@@ -48,6 +49,7 @@ function EventSettingsAdminReady() {
   const { state, updateSettings, error, saving } = useEvent();
   const [settings, setSettings] = useState<EventSettings>(() => structuredClone(state.settings));
   const [saved, setSaved] = useState(false);
+  const [introPreview, setIntroPreview] = useState(0);
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -76,6 +78,29 @@ function EventSettingsAdminReady() {
             </div>
           </section>
 
+          <section className="settings-section entrance-animation-settings">
+            <div className="settings-section__heading">
+              <div><p className="admin-eyebrow">Invitación pública</p><h2>Animación de entrada</h2></div>
+              <label className="switch-row switch-row--compact"><span>Activar animación</span><input type="checkbox" checked={settings.entranceAnimation.enabled} onChange={(event) => setSettings({ ...settings, entranceAnimation: { ...settings.entranceAnimation, enabled: event.target.checked } })} /></label>
+            </div>
+            <p className="entrance-animation-settings__intro">Una apertura breve y cinematográfica que revela la invitación ya cargada debajo.</p>
+            <div className="form-grid">
+              <label className="form-field"><span>Tipo</span><select value={settings.entranceAnimation.type} onChange={() => undefined}><option value="clam">Clam</option></select></label>
+              <label className="form-field"><span>Frecuencia</span><select value={settings.entranceAnimation.frequency} onChange={(event) => setSettings({ ...settings, entranceAnimation: { ...settings.entranceAnimation, frequency: event.target.value as EntranceAnimationFrequency } })}><option value="session">Una vez por sesión</option><option value="always">En cada visita</option><option value="device">Una vez por dispositivo</option></select></label>
+              <label className="form-field"><span>Duración (segundos)</span><input type="number" min="0.5" max="10" step="0.1" value={settings.entranceAnimation.durationMs / 1000} onChange={(event) => setSettings({ ...settings, entranceAnimation: { ...settings.entranceAnimation, durationMs: Math.round(Number(event.target.value) * 1000) } })} /></label>
+              <label className="form-field"><span>Texto principal</span><input value={settings.entranceAnimation.primaryText} onChange={(event) => setSettings({ ...settings, entranceAnimation: { ...settings.entranceAnimation, primaryText: event.target.value } })} /></label>
+              <label className="form-field"><span>Texto secundario</span><input value={settings.entranceAnimation.secondaryText} onChange={(event) => setSettings({ ...settings, entranceAnimation: { ...settings.entranceAnimation, secondaryText: event.target.value } })} /></label>
+              <div className="entrance-animation-settings__toggles">
+                <label className="switch-row"><span>Permitir saltar animación</span><input type="checkbox" checked={settings.entranceAnimation.allowSkip} onChange={(event) => setSettings({ ...settings, entranceAnimation: { ...settings.entranceAnimation, allowSkip: event.target.checked } })} /></label>
+                <label className="switch-row"><span>Mostrar fecha</span><input type="checkbox" checked={settings.entranceAnimation.showDate} onChange={(event) => setSettings({ ...settings, entranceAnimation: { ...settings.entranceAnimation, showDate: event.target.checked } })} /></label>
+              </div>
+            </div>
+            <div className="entrance-animation-settings__actions">
+              <span>La vista previa no modifica la frecuencia elegida.</span>
+              <button type="button" className="button button--quiet" onClick={() => setIntroPreview((value) => value + 1)}>Reproducir animación</button>
+            </div>
+          </section>
+
           <LocationEditor title="Ubicación Primaria (Peatonal)" accent="orange" location={settings.peatonal} onChange={(peatonal) => setSettings({ ...settings, peatonal })} />
           <LocationEditor title="Segunda Ubicación (Key Club)" accent="violet" location={settings.key} onChange={(key) => setSettings({ ...settings, key })} />
         </div>
@@ -97,6 +122,7 @@ function EventSettingsAdminReady() {
           </section>
         </aside>
       </form>
+      {introPreview > 0 ? <EntranceAnimation key={introPreview} config={settings.entranceAnimation} eventDate={settings.eventDate} preview /> : null}
       {error && <div className="admin-toast" role="alert">{error}</div>}
     </div>
   );
