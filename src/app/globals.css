@@ -773,6 +773,25 @@ button {
   text-transform: uppercase;
 }
 
+.public-footer__actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.public-footer__admin {
+  border: 1px solid #2b292e;
+  padding: 7px 10px;
+  color: #918b91;
+  transition: border-color 160ms ease, color 160ms ease;
+}
+
+.public-footer__admin:hover,
+.public-footer__admin:focus-visible {
+  border-color: var(--orange);
+  color: var(--orange-soft);
+}
+
 /* Admin shell */
 
 .admin-site {
@@ -2205,6 +2224,7 @@ button {
   .rsvp-section { width: calc(100% - 32px); padding-inline: 0; }
   .choice-grid--three { grid-template-columns: 1fr; }
   .public-footer { padding: 24px 16px; align-items: flex-start; flex-direction: column; }
+  .public-footer__actions { width: 100%; justify-content: space-between; }
 
   .admin-header { height: 108px; }
   .admin-header__inner {

@@ -306,7 +306,10 @@ export function PublicInvitation() {
 
       <footer className="public-footer">
         <span>Nahuel · {eventDate.long} · Nos vemos ahí</span>
-        <a href="#top">Volver arriba ↑</a>
+        <nav className="public-footer__actions" aria-label="Acciones de la invitación">
+          <a href="#top">Volver arriba ↑</a>
+          <a className="public-footer__admin" href="/admin">Administrar</a>
+        </nav>
       </footer>
     </div>
   );

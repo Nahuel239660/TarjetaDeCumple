@@ -1,84 +1,123 @@
-# Tarjeta de cumple
+# Nahuel Birthday Night
 
-Invitación pública y panel privado de gestión para el cumpleaños de Nahuel.
-Funciona con Next.js, Neon Postgres y Vercel Hobby, sin servicios pagos.
+Una invitación editorial para un cumpleaños nocturno y un panel privado para administrar confirmaciones, contenidos, imágenes y la logística del evento.
 
-## Requisitos
+**Stack:** Next.js App Router · React · TypeScript estricto · PostgreSQL en Neon · Drizzle ORM · Vercel
+
+[Ver sitio en vivo](https://tarjeta-de-cumple.vercel.app)
+
+## Producto
+
+La experiencia pública mantiene el tono de una invitación de club: una narrativa visual de dos paradas, mapa de Peatonal, RSVP integrado y confirmación clara. El back office está pensado para operar la lista real del evento, no como una maqueta administrativa.
+
+### Invitación pública
+
+- RSVP con Peatonal, Key, +1 condicional y comentario opcional.
+- Detección de respuestas con nombres equivalentes, con confirmación explícita antes de aceptar un duplicado.
+- Mapa ligero con enlace de indicaciones, sin API paga.
+- Tres assets independientes: Nahuel, Fernet y Kevin de Vries.
+- Estado de éxito accesible con resumen de la respuesta.
+
+### Administración privada
+
+- Acceso protegido por contraseña y sesión HTTP-only.
+- Métricas derivadas de invitados reales, incluido el headcount con acompañantes.
+- Lista densa con búsqueda, filtros, orden, edición, borrado y exportación CSV.
+- Número visible inmutable (`#001`, `#002`, …), independiente del ID interno y nunca reutilizado.
+- Edición de textos de la invitación, bloques personalizados, imágenes y ubicaciones.
+- Configuración de Peatonal/Key y estado de QR; QR permanece desactivado por defecto.
+
+## Arquitectura
+
+```text
+Next.js App Router
+├── Invitación pública (/)
+├── Admin protegido (/admin/*)
+│   ├── Resumen
+│   ├── Invitados
+│   ├── Invitación
+│   ├── Imágenes
+│   └── Configuración
+├── Server Actions validadas con Zod
+├── Repositorio de eventos desacoplado de la UI
+└── Neon Postgres + Drizzle
+```
+
+La UI no accede a la base directamente. Las Server Actions validan la entrada y delegan en un repositorio del servidor, lo que mantiene el reemplazo de la capa de persistencia acotado.
+
+## Desarrollo local
+
+### Requisitos
 
 - Node.js 20+
 - pnpm 11+
-- Una base Neon Postgres Free conectada desde Vercel
-
-## Instalación local
+- Una base Neon Postgres (plan Free es suficiente)
 
 ```bash
 pnpm install
 cp .env.example .env.local
 ```
 
-Completá `.env.local` con valores locales; nunca subas ese archivo al repositorio.
+Variables necesarias en `.env.local`:
+
+```env
+DATABASE_URL=
+ADMIN_PASSWORD_HASH=
+SESSION_SECRET=
+```
+
+Generá el hash de acceso:
 
 ```bash
 pnpm password:hash -- "una contraseña larga"
 ```
 
-Usá la salida como `ADMIN_PASSWORD_HASH`. Generá `SESSION_SECRET` con un valor aleatorio de al menos 32 caracteres (por ejemplo, `openssl rand -base64 32`).
+Usá la salida como `ADMIN_PASSWORD_HASH` y generá `SESSION_SECRET` con al menos 32 caracteres, por ejemplo `openssl rand -base64 32`.
 
-En `.env.local`, escapá cada signo `$` del hash bcrypt como `\$`; Next expande variables de entorno locales y, sin ese escape, alteraría el hash. En Vercel cargá el hash original, sin escapes.
+> En `.env.local`, escapá cada `$` del hash bcrypt como `\$`; Next expande variables de entorno locales. En Vercel cargá el hash original, sin escapes.
 
-## Base de datos Neon
-
-1. En el dashboard del proyecto de Vercel abrí **Storage** → **Create Database**.
-2. Elegí **Neon Postgres** y seleccioná el plan **Free**.
-3. Conectalo al proyecto; Vercel agrega `DATABASE_URL` automáticamente para los despliegues.
-4. Copiá la URL de desarrollo a tu `.env.local`.
-5. Ejecutá las migraciones y los datos iniciales:
+Después aplicá el esquema y la configuración inicial:
 
 ```bash
 pnpm db:migrate
 pnpm db:seed
-```
-
-El seed de producción es seguro de repetir: crea únicamente la configuración singleton, Peatonal/Key, las tres referencias de imagen, bloques de contenido y QR desactivado cuando faltan. **No crea invitados ni RSVP de muestra.** Los nuevos números visibles de invitados los genera Postgres y nunca se reciclan tras un borrado.
-
-Para poblar una base local de desarrollo vacía con los 64 invitados usados durante Phase 1, ejecutá explícitamente:
-
-```bash
-pnpm db:seed:dev
-```
-
-Ese comando se bloquea con `NODE_ENV=production` y también si la base ya tiene invitados, para no mezclar datos de ejemplo con RSVP reales.
-
-## Desarrollo
-
-```bash
 pnpm dev
 ```
 
-La invitación pública usa datos del servidor. El panel bajo `/admin` redirige a `/admin/login` hasta iniciar sesión. No existe registro de usuarios ni proveedores externos de autenticación.
+Abrí `http://localhost:3000`. El acceso al panel está disponible desde el botón **Administrar** del pie de página o en `/admin`.
 
-## Migraciones
+## Datos y migraciones
 
 ```bash
-pnpm db:generate
-pnpm db:migrate
+pnpm db:generate   # crea una migración desde el schema
+pnpm db:migrate    # aplica las migraciones
+pnpm db:seed       # solo configuración inicial; nunca crea RSVP falsos
+pnpm db:seed:dev   # crea los datos de muestra, solo fuera de producción
 ```
 
-`db:generate` crea una migración a partir del schema Drizzle. Versioná los archivos en `drizzle/` junto al cambio de schema. `db:migrate` requiere `DATABASE_URL`.
+El seed de producción es idempotente donde corresponde: configura contenido, ubicación, metadatos de imágenes, bloques y QR desactivado. Los invitados empiezan vacíos. `db:seed:dev` falla en producción y también si la base ya contiene invitados.
 
-## Imágenes
+## Calidad
 
-Las tres imágenes finales viven en `public/images/` y se versionan con el proyecto. En Phase 2 el gestor persiste título, caption, visibilidad y referencia de archivo; el selector de reemplazo solo muestra una vista previa local y temporal. La carga permanente de archivos queda diferida.
+```bash
+pnpm lint
+pnpm typecheck
+pnpm build
+```
 
-## Deploy gratuito en Vercel
+Se preservan focus visibles, formularios semánticos, navegación por teclado, tabla con scroll horizontal en mobile y preferencias de movimiento reducido.
 
-1. Importá el repositorio en Vercel y dejá seleccionado **Hobby**.
-2. Conectá Neon desde **Storage** usando exclusivamente **Free**.
-3. En **Settings** → **Environment Variables**, agregá para Production y Preview:
-   - `ADMIN_PASSWORD_HASH`
-   - `SESSION_SECRET`
-4. Confirmá que `DATABASE_URL` fue creada por la integración Neon.
-5. Corré `pnpm db:migrate` una vez con esa URL antes del primer uso, o desde una terminal local con la variable configurada.
-6. Desplegá usando el dominio gratuito `*.vercel.app`.
+## Despliegue en Vercel
 
-No se requiere dominio propio, mapa pago, Blob, workers, cron, analítica paga ni plan Vercel/Neon pago.
+El proyecto está preparado para Vercel Hobby y Neon Free; no requiere dominio propio ni servicios pagos.
+
+1. Conectá una base Neon al proyecto de Vercel o agregá `DATABASE_URL` manualmente.
+2. Cargá en Production y Preview: `DATABASE_URL`, `ADMIN_PASSWORD_HASH` y `SESSION_SECRET`.
+3. Ejecutá `pnpm db:migrate` y `pnpm db:seed` con la URL de esa base.
+4. Desplegá con Vercel.
+
+Nunca subas `.env.local`, hashes, secretos de sesión ni URLs de bases privadas. Los artefactos locales de Codex y la configuración local de Vercel también están excluidos del repositorio.
+
+## Alcance actual
+
+La primera entrega incluye persistencia real de RSVP y administración protegida. Quedan deliberadamente fuera: autenticación multiusuario, carga permanente de imágenes, generación/escaneo de QR, notificaciones y detección automática de duplicados.
