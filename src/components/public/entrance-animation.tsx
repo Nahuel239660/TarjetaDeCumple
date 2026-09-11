@@ -122,28 +122,23 @@ export function EntranceAnimation({
         <div className="birthday-intro__atmosphere" aria-hidden="true" />
         <div className="birthday-intro__stage" aria-hidden="true">
           <div className="birthday-intro__glow" />
-          <Image
-            className="birthday-intro__shell birthday-intro__shell--bottom"
-            src="/images/intro/clam-bottom.webp"
-            alt=""
-            width={1254}
-            height={1254}
-            priority
-            onError={finish}
-          />
-          <Image
-            className="birthday-intro__shell birthday-intro__shell--top"
-            src="/images/intro/clam-top.webp"
-            alt=""
-            width={1254}
-            height={1254}
-            priority
-            onError={finish}
-          />
+          <div className="birthday-intro__hinge-shadow" />
           <div className="birthday-intro__copy">
             <strong>{config.primaryText}</strong>
             <span>{config.secondaryText}</span>
             {dateLabel ? <small>{dateLabel}</small> : null}
+          </div>
+          <div className="birthday-intro__shell-viewport">
+            <Image
+              className="birthday-intro__shell-frames"
+              src="/images/intro/clam-shell-frames.webp"
+              alt=""
+              width={5760}
+              height={1440}
+              priority
+              unoptimized
+              onError={finish}
+            />
           </div>
         </div>
         {config.allowSkip || preview ? (
