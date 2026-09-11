@@ -65,6 +65,7 @@ Variables necesarias en `.env.local`:
 DATABASE_URL=
 ADMIN_PASSWORD_HASH=
 SESSION_SECRET=
+BLOB_READ_WRITE_TOKEN=
 ```
 
 Generá el hash de acceso:
@@ -113,12 +114,13 @@ Se preservan focus visibles, formularios semánticos, navegación por teclado, t
 El proyecto está preparado para Vercel Hobby y Neon Free; no requiere dominio propio ni servicios pagos.
 
 1. Conectá una base Neon al proyecto de Vercel o agregá `DATABASE_URL` manualmente.
-2. Cargá en Production y Preview: `DATABASE_URL`, `ADMIN_PASSWORD_HASH` y `SESSION_SECRET`.
-3. Ejecutá `pnpm db:migrate` y `pnpm db:seed` con la URL de esa base.
-4. Desplegá con Vercel.
+2. Creá un almacén Vercel Blob y conectalo al proyecto. Vercel agregará `BLOB_READ_WRITE_TOKEN` automáticamente.
+3. Cargá en Production y Preview: `DATABASE_URL`, `ADMIN_PASSWORD_HASH`, `SESSION_SECRET` y `BLOB_READ_WRITE_TOKEN`.
+4. Ejecutá `pnpm db:migrate` y `pnpm db:seed` con la URL de esa base.
+5. Desplegá con Vercel.
 
 Nunca subas `.env.local`, hashes, secretos de sesión ni URLs de bases privadas. Los artefactos locales de Codex y la configuración local de Vercel también están excluidos del repositorio.
 
 ## Alcance actual
 
-La primera entrega incluye persistencia real de RSVP y administración protegida. Quedan deliberadamente fuera: autenticación multiusuario, carga permanente de imágenes, generación/escaneo de QR, notificaciones y detección automática de duplicados.
+La primera entrega incluye persistencia real de RSVP, administración protegida y carga permanente de las tres imágenes mediante Vercel Blob. Quedan deliberadamente fuera: autenticación multiusuario, generación/escaneo de QR, notificaciones y detección automática de duplicados.

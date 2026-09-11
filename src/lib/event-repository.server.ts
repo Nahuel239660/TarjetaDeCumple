@@ -315,7 +315,13 @@ export async function saveAdminSettings(settings: EventSettings) {
   await db.update(eventConfigurations).set({ content, settings, updatedAt: new Date() }).where(eq(eventConfigurations.id, configuration.id));
 }
 
-export async function saveAdminImageMetadata(input: Pick<ImageSlot, "id" | "title" | "caption" | "visible">) {
+export async function saveAdminImageMetadata(input: Pick<ImageSlot, "id" | "title" | "caption" | "visible"> & { src?: string }) {
   const db = getDatabase();
-  await db.update(imageSlots).set({ title: input.title, caption: input.caption, visible: input.visible, updatedAt: new Date() }).where(eq(imageSlots.id, input.id));
+  await db.update(imageSlots).set({
+    title: input.title,
+    caption: input.caption,
+    visible: input.visible,
+    ...(input.src ? { src: input.src } : {}),
+    updatedAt: new Date(),
+  }).where(eq(imageSlots.id, input.id));
 }

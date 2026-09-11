@@ -181,7 +181,7 @@ export function PublicInvitation() {
             </div>
             <aside className="stop-note">
               <p className="public-kicker">Lineup & acceso</p>
-              <p>Acceso directo por lista del cumple. Podés sumarte directo sin pasar por Peatonal si preferís caer más tarde.</p>
+              <p>Podés sumarte directo sin pasar por Peatonal si preferís caer más tarde.</p>
               <a className="public-button public-button--secondary" href="#rsvp">Anotarme para Key →</a>
             </aside>
           </div>
@@ -211,7 +211,6 @@ export function PublicInvitation() {
               </div>
               <aside className="stop-note">
                 <a className="public-button public-button--secondary" href="#rsvp">Anotarme para Key →</a>
-                <p>Acceso directo por lista del cumple.</p>
                 {keyDirections && <a className="text-link" href={keyDirections} target="_blank" rel="noreferrer">{content.key.directionsLabel}</a>}
               </aside>
             </div>

@@ -3,6 +3,7 @@
 import "server-only";
 
 import bcrypt from "bcryptjs";
+import { del, put } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { clearAdminSession, createAdminSession, requireAdminAction } from "@/lib/auth";
@@ -121,5 +122,43 @@ export async function updateImageMetadataAction(input: unknown) {
   await requireAdminAction();
   if (!isDatabaseConfigured()) throw new Error(configurationError);
   await saveAdminImageMetadata(parsed.data);
+  return stateAfterAdminMutation();
+}
+
+export async function updateImageAction(formData: FormData) {
+  await requireAdminAction();
+  if (!isDatabaseConfigured()) throw new Error(configurationError);
+
+  const parsed = imageMetadataSchema.safeParse({
+    id: formData.get("id"),
+    title: formData.get("title"),
+    caption: formData.get("caption"),
+    visible: formData.get("visible") === "true",
+  });
+  if (!parsed.success) throw new Error("Los datos de imagen no son válidos.");
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    await saveAdminImageMetadata(parsed.data);
+    return stateAfterAdminMutation();
+  }
+  if (!file.type.startsWith("image/")) throw new Error("Elegí un archivo de imagen válido.");
+  if (file.size > 2.5 * 1024 * 1024) throw new Error("La imagen supera el máximo de 2,5 MB.");
+  if (!process.env.BLOB_READ_WRITE_TOKEN) throw new Error("Falta configurar BLOB_READ_WRITE_TOKEN para guardar imágenes.");
+
+  const extension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const blob = await put(`event-images/${parsed.data.id}.${extension}`, file, {
+    access: "public",
+    addRandomSuffix: true,
+    contentType: file.type,
+  });
+
+  try {
+    await saveAdminImageMetadata({ ...parsed.data, src: blob.url });
+  } catch (error) {
+    await del(blob.url).catch(() => undefined);
+    throw error;
+  }
+
   return stateAfterAdminMutation();
 }

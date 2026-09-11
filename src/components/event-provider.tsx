@@ -8,6 +8,7 @@ import {
   updateGuestAction,
   updateImageMetadataAction,
   updateSettingsAction,
+  updateImageAction,
   type PublicRsvpResult,
 } from "@/app/actions";
 import type {
@@ -30,7 +31,7 @@ interface EventContextValue {
   deleteGuest(id: string): Promise<boolean>;
   updateContent(content: EventContent, customBlocks: CustomContentBlock[]): Promise<boolean>;
   updateSettings(settings: EventSettings): Promise<boolean>;
-  updateImage(image: ImageSlot): Promise<boolean>;
+  updateImage(image: ImageSlot, file?: File): Promise<boolean>;
 }
 
 interface PublicEventContextValue {
@@ -82,12 +83,21 @@ export function EventProvider({ children, initialState }: { children: ReactNode;
     deleteGuest: (id) => commit(() => deleteGuestAction(id)),
     updateContent: (content, customBlocks) => commit(() => updateContentAction({ content, customBlocks })),
     updateSettings: (settings) => commit(() => updateSettingsAction(settings)),
-    updateImage: (image) => commit(() => updateImageMetadataAction({
-      id: image.id,
-      title: image.title,
-      caption: image.caption,
-      visible: image.visible,
-    })),
+    updateImage: (image, file) => commit(() => {
+      if (!file) return updateImageMetadataAction({
+        id: image.id,
+        title: image.title,
+        caption: image.caption,
+        visible: image.visible,
+      });
+      const formData = new FormData();
+      formData.set("id", image.id);
+      formData.set("title", image.title);
+      formData.set("caption", image.caption);
+      formData.set("visible", String(image.visible));
+      formData.set("file", file);
+      return updateImageAction(formData);
+    }),
   }), [commit, error, saving, state]);
 
   return <EventContext.Provider value={value}>{children}</EventContext.Provider>;

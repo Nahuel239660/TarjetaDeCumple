@@ -16,6 +16,7 @@ export function ImageManager() {
   const { state, updateImage, error, saving } = useEvent();
   const [drafts, setDrafts] = useState<Record<ImageSlot["id"], ImageSlot>>(() => Object.fromEntries(state.images.map((image) => [image.id, { ...image }])) as Record<ImageSlot["id"], ImageSlot>);
   const [localPreviews, setLocalPreviews] = useState<Partial<Record<ImageSlot["id"], string>>>({});
+  const [pendingFiles, setPendingFiles] = useState<Partial<Record<ImageSlot["id"], File>>>({});
   const [feedback, setFeedback] = useState("");
 
   function changeSlot(slot: ImageSlot, patch: Partial<ImageSlot>) {
@@ -35,9 +36,14 @@ export function ImageManager() {
       return;
     }
 
-    setLocalPreviews((current) => ({ ...current, [slot.id]: URL.createObjectURL(file) }));
+    setLocalPreviews((current) => {
+      const previousPreview = current[slot.id];
+      if (previousPreview) URL.revokeObjectURL(previousPreview);
+      return { ...current, [slot.id]: URL.createObjectURL(file) };
+    });
+    setPendingFiles((current) => ({ ...current, [slot.id]: file }));
     changeSlot(slot, { visible: true });
-    setFeedback(`${slotMeta[slot.id].heading}: vista previa local activada. La carga permanente se incorpora en una fase posterior.`);
+    setFeedback(`${slotMeta[slot.id].heading}: imagen lista para guardar.`);
     event.target.value = "";
   }
 
@@ -45,9 +51,12 @@ export function ImageManager() {
     let savedAll = true;
     for (const slot of state.images) {
       const draft = drafts[slot.id] ?? slot;
-      if (!await updateImage(draft)) savedAll = false;
+      if (!await updateImage(draft, pendingFiles[slot.id])) savedAll = false;
     }
-    if (savedAll) setFeedback("Metadatos de galería guardados.");
+    if (savedAll) {
+      setPendingFiles({});
+      setFeedback("Imágenes y metadatos guardados.");
+    }
   }
 
   return (
@@ -83,7 +92,7 @@ export function ImageManager() {
           );
         })}
       </div>
-      <p className="upload-note">Las imágenes de producción viven en el repositorio. La vista previa de reemplazo es local y temporal; la carga permanente está diferida.</p>
+      <p className="upload-note">Los reemplazos se guardan de forma permanente al presionar “Guardar cambios”. Máximo 2,5 MB por imagen.</p>
       {(feedback || error) && <div className="admin-toast" role={error ? "alert" : "status"}>{error || feedback}</div>}
     </div>
   );
